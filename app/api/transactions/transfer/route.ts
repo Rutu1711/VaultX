@@ -25,7 +25,14 @@ export async function POST(request: Request) {
       await tx.account.update({ where: { id: sender.id }, data: { balance: { decrement: amount } } });
       await tx.account.update({ where: { id: receiver.id }, data: { balance: { increment: amount } } });
       await tx.transaction.create({
-        data: { senderId: sender.id, receiverId: receiver.id, amount, status: "SUCCESS" },
+        data: {
+          senderId: sender.id,
+          receiverId: receiver.id,
+          amount,
+          status: "SUCCESS",
+          type: "TRANSFER",
+          narrative: `Transfer to ${receiver.accountNumber}`,
+        },
       });
     });
     return NextResponse.redirect(new URL("/transactions?success=1", request.url));

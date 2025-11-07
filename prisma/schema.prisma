@@ -14,6 +14,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum TransactionType {
+  TRANSFER
+  CARD_SPEND
+}
+
 model User {
   id           String    @id @default(cuid())
   name         String
@@ -38,15 +43,22 @@ model Account {
 }
 
 model Transaction {
-  id         String   @id @default(cuid())
+  id         String            @id @default(cuid())
   senderId   String
-  receiverId String
+  receiverId String?
+  cardId     String?
+  type       TransactionType  @default(TRANSFER)
+  merchant   String?
+  narrative  String?
   amount     Decimal
   status     String
-  createdAt  DateTime @default(now())
+  createdAt  DateTime         @default(now())
 
-  sender     Account  @relation("TransactionSender", fields: [senderId], references: [id])
-  receiver   Account  @relation("TransactionReceiver", fields: [receiverId], references: [id])
+  sender     Account          @relation("TransactionSender", fields: [senderId], references: [id])
+  receiver   Account?         @relation("TransactionReceiver", fields: [receiverId], references: [id])
+  card       Card?            @relation(fields: [cardId], references: [id], onDelete: SetNull)
+
+  @@index([cardId])
 }
 
 model Card {
@@ -59,6 +71,7 @@ model Card {
   lastUsedAt DateTime?
   accountId  String
   account    Account @relation(fields: [accountId], references: [id])
+  transactions Transaction[]
 }
 
 model Beneficiary {
