@@ -69,7 +69,8 @@ export async function POST(request: Request) {
   }
 
   const pdfBytes = await buildPdf({ card, month, transactions, totalSpend, averageSpend, limit });
-  return new NextResponse(pdfBytes, {
+  const blob = new Blob([new Uint8Array(pdfBytes)], { type: "application/pdf" });
+  return new Response(blob, {
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": `attachment; filename="VaultX-card-${maskCard(card.cardNumber)}-${month}.pdf"`,
