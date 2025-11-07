@@ -1,0 +1,18 @@
+import { NextResponse } from "next/server";
+import { getSessionUser } from "../../../../lib/auth";
+import { prisma } from "../../../../lib/prisma";
+
+export async function POST(request: Request) {
+  const user = await getSessionUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const form = await request.formData();
+  const cardId = String(form.get("cardId"));
+  const card = await prisma.card.findUnique({ where: { id: cardId } });
+  if (!card) return NextResponse.json({ error: "Card not found" }, { status: 404 });
+  await prisma.card.update({ where: { id: cardId }, data: { isFrozen: !card.isFrozen } });
+  return NextResponse.redirect(new URL("/cards", request.url));
+}
+
+
