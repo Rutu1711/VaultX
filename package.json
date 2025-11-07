@@ -7,8 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "prisma generate",
-    "prisma:migrate": "prisma migrate deploy"
+    "postinstall": "prisma generate && prisma db push"
+
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.0.4",
