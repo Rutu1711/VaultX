@@ -1,9 +1,14 @@
 import { requireUser } from "../../lib/auth";
 import { prisma } from "../../lib/prisma";
+import TransferPanel from "../../components/transactions/TransferPanel";
 
-export default async function TransactionsPage() {
+type PageProps = {
+  searchParams?: { [key: string]: string | string[] | undefined };
+};
+
+export default async function TransactionsPage({ searchParams }: PageProps) {
   const user = await requireUser();
-  const [accounts, recent] = await Promise.all([
+  const [accounts, recent, beneficiaries] = await Promise.all([
     prisma.account.findMany({ where: { userId: user.id } }),
     prisma.transaction.findMany({
       where: {
@@ -15,20 +20,23 @@ export default async function TransactionsPage() {
       orderBy: { createdAt: "desc" },
       take: 20,
     }),
+    prisma.beneficiary.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" } }),
   ]);
+  const transferStatus = Array.isArray(searchParams?.success)
+    ? searchParams?.success[0]
+    : searchParams?.success;
+  const beneficiaryStatus = Array.isArray(searchParams?.beneficiary)
+    ? searchParams?.beneficiary[0]
+    : searchParams?.beneficiary;
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Transfer Funds</h1>
-      <form action="/api/transactions/transfer" method="post" className="space-y-3">
-        <select name="senderId" className="w-full rounded border border-zinc-800 bg-black p-2">
-          {accounts.map(a => (
-            <option key={a.id} value={a.id}>{a.accountNumber} (${Number(a.balance).toFixed(2)})</option>
-          ))}
-        </select>
-        <input name="receiverAccountNumber" className="w-full rounded border border-zinc-800 bg-black p-2" placeholder="Receiver Account Number" />
-        <input name="amount" className="w-full rounded border border-zinc-800 bg-black p-2" placeholder="Amount" type="number" step="0.01" />
-        <button className="rounded bg-zinc-100 px-4 py-2 text-black">Send</button>
-      </form>
+      <h1 className="text-2xl font-semibold">Transfers & Beneficiaries</h1>
+      <TransferPanel
+        accounts={accounts.map((a) => ({ id: a.id, accountNumber: a.accountNumber, balance: Number(a.balance) }))}
+        beneficiaries={beneficiaries.map((b) => ({ id: b.id, nickname: b.nickname, accountNumber: b.accountNumber }))}
+        transferStatus={transferStatus}
+        beneficiaryStatus={beneficiaryStatus}
+      />
       <div className="rounded border border-zinc-800">
         <div className="border-b border-zinc-800 p-3 text-sm text-zinc-400">Recent Transactions</div>
         <ul className="divide-y divide-zinc-800">

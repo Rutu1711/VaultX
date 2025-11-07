@@ -28,8 +28,9 @@ export async function POST(request: Request) {
         data: { senderId: sender.id, receiverId: receiver.id, amount, status: "SUCCESS" },
       });
     });
-    return NextResponse.redirect(new URL("/dashboard", request.url));
-  } catch (e) {
+    return NextResponse.redirect(new URL("/transactions?success=1", request.url));
+  } catch (error) {
+    console.error("Transfer failed", error);
     return NextResponse.json({ error: "Transfer failed" }, { status: 400 });
   }
 }

@@ -10,7 +10,7 @@ export async function POST(request: Request) {
   const card = await prisma.card.findFirst({ where: { id: cardId, account: { userId: user.id } } });
   if (!card) return NextResponse.json({ error: "Card not found" }, { status: 404 });
   await prisma.card.delete({ where: { id: cardId } });
-  return NextResponse.redirect(new URL("/cards", request.url));
+  return NextResponse.redirect(new URL("/cards?status=deleted", request.url));
 }
 
 

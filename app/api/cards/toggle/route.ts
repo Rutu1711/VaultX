@@ -9,10 +9,12 @@ export async function POST(request: Request) {
   }
   const form = await request.formData();
   const cardId = String(form.get("cardId"));
-  const card = await prisma.card.findUnique({ where: { id: cardId } });
-  if (!card) return NextResponse.json({ error: "Card not found" }, { status: 404 });
-  await prisma.card.update({ where: { id: cardId }, data: { isFrozen: !card.isFrozen } });
-  return NextResponse.redirect(new URL("/cards", request.url));
+  const card = await prisma.card.findUnique({ where: { id: cardId }, include: { account: true } });
+  if (!card || card.account.userId !== user.id) {
+    return NextResponse.json({ error: "Card not found" }, { status: 404 });
+  }
+  await prisma.card.update({ where: { id: cardId }, data: { isFrozen: !card.isFrozen, lastUsedAt: new Date() } });
+  return NextResponse.redirect(new URL("/cards?status=updated", request.url));
 }
 
 

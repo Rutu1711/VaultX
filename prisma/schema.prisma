@@ -20,6 +20,7 @@ model User {
   email        String    @unique
   passwordHash String
   accounts     Account[]
+  beneficiaries Beneficiary[]
   createdAt    DateTime  @default(now())
 }
 
@@ -30,6 +31,7 @@ model Account {
   userId        String
   user          User           @relation(fields: [userId], references: [id])
   cards         Card[]
+  createdAt     DateTime       @default(now())
 
   outgoingTransactions Transaction[] @relation("TransactionSender")
   incomingTransactions Transaction[] @relation("TransactionReceiver")
@@ -52,6 +54,18 @@ model Card {
   cardNumber String
   expiry     String
   isFrozen   Boolean @default(false)
+  nickname   String?
+  limit      Decimal?
+  lastUsedAt DateTime?
   accountId  String
   account    Account @relation(fields: [accountId], references: [id])
+}
+
+model Beneficiary {
+  id            String   @id @default(cuid())
+  nickname      String
+  accountNumber String
+  createdAt     DateTime @default(now())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
 }

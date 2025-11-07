@@ -10,10 +10,10 @@ export async function POST(request: Request) {
   const currentPassword = String(form.get("currentPassword"));
   const newPassword = String(form.get("newPassword"));
   const ok = await bcrypt.compare(currentPassword, user.passwordHash);
-  if (!ok) return NextResponse.json({ error: "Invalid password" }, { status: 400 });
+  if (!ok) return NextResponse.redirect(new URL("/settings?status=bad-password", request.url));
   const passwordHash = await bcrypt.hash(newPassword, 10);
   await prisma.user.update({ where: { id: user.id }, data: { passwordHash } });
-  return NextResponse.redirect(new URL("/settings", request.url));
+  return NextResponse.redirect(new URL("/settings?status=password", request.url));
 }
 
 

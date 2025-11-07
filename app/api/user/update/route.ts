@@ -9,7 +9,7 @@ export async function POST(request: Request) {
   const name = String(form.get("name"));
   const email = String(form.get("email"));
   await prisma.user.update({ where: { id: user.id }, data: { name, email } });
-  return NextResponse.redirect(new URL("/settings", request.url));
+  return NextResponse.redirect(new URL("/settings?status=profile", request.url));
 }
 
 
