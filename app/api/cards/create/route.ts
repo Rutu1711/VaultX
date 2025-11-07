@@ -5,7 +5,10 @@ import { getSessionUser } from "../../../../lib/auth";
 
 const Body = z.object({
   accountId: z.string(),
-  cardNumber: z.string().min(12),
+  cardNumber: z
+    .string()
+    .regex(/^\d{8,19}$/
+    , "Card number should be 8-19 digits"),
   expiry: z.string().min(4),
   nickname: z.string().optional(),
   limit: z.string().optional(),
@@ -18,7 +21,7 @@ export async function POST(request: Request) {
   const body = Object.fromEntries(fd) as Record<string, string>;
   const parsed = Body.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid data" }, { status: 400 });
+    return NextResponse.redirect(new URL("/cards?status=invalid", request.url));
   }
   const { accountId, cardNumber, expiry, nickname, limit } = parsed.data;
   const account = await prisma.account.findFirst({ where: { id: accountId, userId: user.id } });

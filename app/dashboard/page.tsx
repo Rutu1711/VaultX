@@ -9,7 +9,10 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   const user = await requireUser();
   const [accounts, cards, transactions] = await Promise.all([
     prisma.account.findMany({ where: { userId: user.id }, orderBy: { createdAt: "asc" } }),
-    prisma.card.findMany({ where: { account: { userId: user.id } }, orderBy: { createdAt: "desc" } }),
+    prisma.card.findMany({
+      where: { account: { userId: user.id } },
+      orderBy: [{ lastUsedAt: "desc" }, { cardNumber: "asc" }],
+    }),
     prisma.transaction.findMany({
       where: {
         OR: [

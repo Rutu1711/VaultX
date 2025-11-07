@@ -16,7 +16,16 @@ export default async function CardsPage({ searchParams }: PageProps) {
     prisma.account.findMany({ where: { userId: user.id }, orderBy: { createdAt: "asc" } }),
   ]);
   const status = Array.isArray(searchParams?.status) ? searchParams?.status[0] : searchParams?.status;
-  const statusMessage = status === "created" ? "New card created" : status === "updated" ? "Card updated" : status === "deleted" ? "Card removed" : null;
+  const statusMessage =
+    status === "created"
+      ? { tone: "success", text: "New card created" }
+      : status === "updated"
+      ? { tone: "info", text: "Card updated" }
+      : status === "deleted"
+      ? { tone: "info", text: "Card removed" }
+      : status === "invalid"
+      ? { tone: "error", text: "Check the card number (8-19 digits) and try again." }
+      : null;
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -25,7 +34,19 @@ export default async function CardsPage({ searchParams }: PageProps) {
           <p className="text-sm text-zinc-500">Create, freeze, and control spending limits.</p>
         </div>
       </div>
-      {statusMessage && <div className="rounded border border-emerald-500 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-400">{statusMessage}</div>}
+      {statusMessage && (
+        <div
+          className={`rounded border px-4 py-2 text-sm ${
+            statusMessage.tone === "success"
+              ? "border-emerald-500 bg-emerald-500/10 text-emerald-400"
+              : statusMessage.tone === "error"
+              ? "border-red-500 bg-red-500/10 text-red-400"
+              : "border-zinc-700 bg-zinc-800/40 text-zinc-300"
+          }`}
+        >
+          {statusMessage.text}
+        </div>
+      )}
       <div className="rounded border border-zinc-800 p-4">
         <div className="mb-3 text-sm text-zinc-400">Create Instant Card</div>
         <AddCardForm accounts={accounts.map(a => ({ id: a.id, accountNumber: a.accountNumber }))} />
